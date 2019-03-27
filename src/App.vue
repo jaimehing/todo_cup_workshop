@@ -3,10 +3,17 @@
     <div class="TodoContainer">
       <h1 class="AppTitle">My Todo Application</h1>
       <form>
-        <input type="text" placeholder="e.g. Get the laundry" class="TodoInput" v-model="todoText">
+        <input
+          type="text"
+          placeholder="e.g. Get the laundry"
+          class="TodoInput"
+          :value="todoText"
+          @input="updateTodoText"
+        >
         <button type="button" class="AddButton" @click="addTodo">Add</button>
       </form>
       <div class="Todos">
+        <span v-if="isFetching">Loading Todos...</span>
         <div class="Todo" :key="ind" v-for="(todo, ind) in todos">
           <span class="TodoContent">{{todo}}</span>
           <button type="button" class="DeleteTodoButton" @click="deleteTodo(ind)">Delete</button>
@@ -21,46 +28,28 @@
 </template>
 
 <script>
-// <todo-text-component @input="updateTodoText"/>
-// <add-todo-button @click="addTodo"/>
+import { mapMutations, mapState } from 'vuex';
 import axios from 'axios';
-// import TodoTextComponent from './components/TodoTextComponent.vue';
-// import AddTodoButton from './components/AddTodoButton.vue';
 
 export default {
-  /* components: {
-    TodoTextComponent,
-    AddTodoButton,
-  }, */
-  data() {
-    return {
-      todoText: '',
-      todos: [],
-    };
-  },
   async created() {
-    /* try {
-      const response = await axios.get(
-        'https://jsonplaceholder.typicode.com/todos'
-      );
-      this.todos = response.data.map(todo => todo.title);
-    } catch (e) {
-      console.log(e);
-    } */
+    await this.$store.dispatch('loadTodos');
+  },
+  computed: {
+    ...mapState({
+      todos: 'todos',
+      todoText: 'todoText',
+      isFetching: 'isFetching',
+    }),
   },
   methods: {
-    /* updateTodoText(value) {
-      console.log('updateTodoText is called');
-      console.log(value);
-      this.todoText = value;
-    }, */
-    deleteTodo(ind) {
-      this.todos.splice(ind, 1);
+    updateTodoText(e) {
+      this.$store.commit('updateTodoText', e.target.value);
     },
-    addTodo() {
-      this.todos.push(this.todoText);
-      this.todoText = '';
-    },
+    ...mapMutations({
+      deleteTodo: 'deleteTodo',
+      addTodo: 'addTodo',
+    }),
   },
 };
 </script>
